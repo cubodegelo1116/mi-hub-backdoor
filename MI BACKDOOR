@@ -1,6 +1,6 @@
--- LocalScript em StarterGui
-
 local player = game.Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "LALOL_Hub_Backdoor"
 gui.ResetOnSpawn = false
@@ -8,7 +8,7 @@ gui.ResetOnSpawn = false
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 500, 0, 275)
 frame.Position = UDim2.new(0.5, -250, 0.5, -137)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
@@ -20,15 +20,15 @@ title.BackgroundTransparency = 1
 title.Text = "MI HUB BACKDOOR"
 title.Font = Enum.Font.FredokaOne
 title.TextScaled = true
-title.TextColor3 = Color3.new(1, 1, 1)
+title.TextColor3 = Color3.fromRGB(180, 30, 30)
 
 local gradient = Instance.new("UIGradient", title)
 gradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
-	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 0, 255)),
-	ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 0, 255)),
-	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 255, 255)),
-	ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 255, 0))
+	ColorSequenceKeypoint.new(0.00, Color3.fromRGB(130, 0, 0)),
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(150, 0, 0)),
+	ColorSequenceKeypoint.new(0.50, Color3.fromRGB(180, 0, 0)),
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(150, 0, 0)),
+	ColorSequenceKeypoint.new(1.00, Color3.fromRGB(130, 0, 0))
 })
 
 local box = Instance.new("TextBox", frame)
@@ -42,8 +42,8 @@ box.TextXAlignment = Enum.TextXAlignment.Left
 box.TextYAlignment = Enum.TextYAlignment.Top
 box.ClearTextOnFocus = false
 box.MultiLine = true
-box.TextColor3 = Color3.fromRGB(255, 255, 255)
-box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+box.TextColor3 = Color3.fromRGB(200, 100, 100)
+box.BackgroundColor3 = Color3.fromRGB(30, 5, 5)
 box.BorderSizePixel = 0
 
 local execute = Instance.new("TextButton", frame)
@@ -51,10 +51,10 @@ execute.Size = UDim2.new(0.5, -15, 0, 40)
 execute.Position = UDim2.new(0, 10, 1, -50)
 execute.Text = "Execute"
 execute.Font = Enum.Font.FredokaOne
-execute.TextColor3 = Color3.fromRGB(0, 255, 0)
+execute.TextColor3 = Color3.fromRGB(255, 100, 100)
 execute.TextScaled = true
-execute.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-execute.BorderColor3 = Color3.fromRGB(0, 255, 0)
+execute.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+execute.BorderColor3 = Color3.fromRGB(255, 0, 0)
 execute.BorderSizePixel = 2
 
 local clear = Instance.new("TextButton", frame)
@@ -62,20 +62,53 @@ clear.Size = UDim2.new(0.5, -15, 0, 40)
 clear.Position = UDim2.new(0.5, 5, 1, -50)
 clear.Text = "Clear"
 clear.Font = Enum.Font.FredokaOne
-clear.TextColor3 = Color3.fromRGB(0, 255, 255)
+clear.TextColor3 = Color3.fromRGB(255, 50, 50)
 clear.TextScaled = true
-clear.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-clear.BorderColor3 = Color3.fromRGB(0, 255, 255)
+clear.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+clear.BorderColor3 = Color3.fromRGB(255, 0, 0)
 clear.BorderSizePixel = 2
 
 clear.MouseButton1Click:Connect(function()
 	box.Text = ""
 end)
 
--- VARIÁVEL GLOBAL: guarda o backdoor se encontrado
+-- Variável global para armazenar backdoor detectado
 local backdoorDetectado = nil
 
--- Função que procura um possível backdoor
+-- Função para enviar notificações
+local function notificar(titulo, texto)
+	StarterGui:SetCore("SendNotification", {
+		Title = titulo,
+		Text = texto,
+		Duration = 5
+	})
+end
+
+-- Função para scan ultra pesado (travando o jogo durante o scan)
+local function scanUltraPesado(obj)
+	local function lerTudo(ob)
+		for _, child in ipairs(ob:GetChildren()) do
+			pcall(function()
+				-- Força leitura e tenta interagir
+				local _ = child.Name
+				local _ = child.ClassName
+				local _ = child:GetAttributes()
+				local _ = child:GetFullName()
+				
+				-- Testa RemoteEvent e RemoteFunction tentando disparar
+				if child:IsA("RemoteEvent") then
+					pcall(function() child:FireServer(true) end)
+				elseif child:IsA("RemoteFunction") then
+					pcall(function() child:InvokeServer("test") end)
+				end
+			end)
+			lerTudo(child)
+		end
+	end
+	lerTudo(obj)
+end
+
+-- Função para procurar backdoor de forma mais direta (base simples)
 local function procurarBackdoor()
 	local locais = {game.ReplicatedStorage, game.Workspace, game:GetService("Players")}
 	local nomesSuspeitos = {"Backdoor", "Execute", "RunScript", "Remote", "SS", "Server", "System", "Control"}
@@ -94,12 +127,16 @@ local function procurarBackdoor()
 	return nil
 end
 
--- ✅ Verifica automaticamente ao iniciar
+-- Verificação automática ao iniciar
 task.delay(1, function()
+	notificar("MI BACKDOOR GUI", "Iniciando scan ultra pesado...")
+	scanUltraPesado(game)
 	backdoorDetectado = procurarBackdoor()
 	if backdoorDetectado then
+		notificar("Backdoor Detectado", backdoorDetectado:GetFullName())
 		warn("✅ Backdoor encontrado ao iniciar: " .. backdoorDetectado:GetFullName())
 	else
+		notificar("Nenhum Backdoor", "Nenhum backdoor detectado ao iniciar.")
 		warn("❌ Nenhum backdoor detectado ao iniciar.")
 	end
 end)
